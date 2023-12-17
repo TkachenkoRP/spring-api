@@ -36,9 +36,5 @@ public class UserControllerTest extends AbstractTestController {
         Mockito.when(userService.findAll()).thenReturn(users);
 
         Mockito.when(userMapper.entityListToListResponse(users)).thenReturn(userEntityListResponse);
-
-
     }
-
-
 }

@@ -31,7 +31,6 @@ public abstract class CategoryMapperDelegate implements CategoryMapper {
         CategoryEntityResponse response = new CategoryEntityResponse();
         response.setId(entity.getId());
         response.setName(entity.getName());
-        //TODO Заменить на запрос?
         response.setCountNews(entity.getNews().size());
         return response;
     }

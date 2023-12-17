@@ -33,6 +33,9 @@ dependencies {
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("net.javacrumbs.json-unit:json-unit:3.2.2")
+	testImplementation("org.testcontainers:testcontainers:1.19.3")
+	testImplementation("org.testcontainers:postgresql:1.19.3")
+	testImplementation("org.testcontainers:junit-jupiter:1.19.3")
 	implementation("org.apache.commons:commons-lang3:3.14.0")
 }
 
