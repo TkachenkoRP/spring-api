@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class UserEntityResponse {
     private Long id;
     private String name;
-    private Integer countNew;
-    private Integer countComment;
+    private Integer countNews;
+    private Integer countComments;
 }

@@ -1,0 +1,16 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "User1",
+      "countNews": 0,
+      "countComments": 0
+    },
+    {
+      "id": 2,
+      "name": "User2",
+      "countNews": 0,
+      "countComments": 0
+    }
+  ]
+}

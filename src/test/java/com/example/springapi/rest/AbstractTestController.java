@@ -95,7 +95,7 @@ public abstract class AbstractTestController {
     protected UserEntityResponse createUserResponse(Long id) {
         UserEntityResponse response = new UserEntityResponse(
                 id,
-                "User" + 1,
+                "User" + id,
                 0,
                 0
                 );

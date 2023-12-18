@@ -35,8 +35,8 @@ public abstract class UserMapperDelegate implements UserMapper {
         UserEntityResponse response = new UserEntityResponse();
         response.setId(entity.getId());
         response.setName(entity.getName());
-        response.setCountNew(entity.getNews().size());
-        response.setCountComment(entity.getComments().size());
+        response.setCountNews(entity.getNews().size());
+        response.setCountComments(entity.getComments().size());
         return response;
     }
 }
