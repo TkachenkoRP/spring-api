@@ -5,6 +5,8 @@ import com.example.springapi.model.CommentEntity;
 import com.example.springapi.service.CommentService;
 import com.example.springapi.web.model.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -106,8 +108,15 @@ public class CommentController {
             )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<CommentEntityResponse> update(@PathVariable("id") Long commentId,
-                                                        @RequestBody @Valid UpsertCommentEntityRequest request) {
+    public ResponseEntity<CommentEntityResponse> update(
+            @Parameter(
+                    description = "ID пользователя",
+                    required = false,
+                    in = ParameterIn.HEADER
+            )
+            @RequestHeader(value = "user", required = false) String userHeader,
+            @PathVariable("id") Long commentId,
+            @RequestBody @Valid UpsertCommentEntityRequest request) {
         CommentEntity commentEntity = commentService.update(
                 commentMapper.requestToEntity(commentId, request)
         );
@@ -120,7 +129,14 @@ public class CommentController {
             tags = {"category", "id"}
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(
+                    description = "ID пользователя",
+                    required = false,
+                    in = ParameterIn.HEADER
+            )
+            @RequestHeader(value = "user", required = false) String userHeader,
+            @PathVariable Long id) {
         commentService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

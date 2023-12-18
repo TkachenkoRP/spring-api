@@ -3,7 +3,6 @@ package com.example.springapi.aop;
 import com.example.springapi.exception.VerificationException;
 import com.example.springapi.model.CommentEntity;
 import com.example.springapi.model.NewEntity;
-import com.example.springapi.service.NewService;
 import com.example.springapi.service.impl.DatabaseCommentService;
 import com.example.springapi.service.impl.DatabaseNewService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,13 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.HandlerMapping;
 
-import java.util.Map;
 import java.util.Objects;
 
 @Aspect
@@ -37,9 +33,9 @@ public class VerificationAspect {
         if (args.length > 0) {
             Object firstArg = args[0];
             if (firstArg instanceof CommentEntity) {
-                userId = ((CommentEntity) firstArg).getUser().getId();
+                userId = databaseCommentService.findById(((CommentEntity) firstArg).getId()).getUser().getId();
             } else if (firstArg instanceof NewEntity) {
-                userId = ((NewEntity) firstArg).getUser().getId();
+                userId = databaseNewService.findById(((NewEntity) firstArg).getId()).getUser().getId();
             } else if (firstArg instanceof Long) {
                 userId = getUserIdFromService(joinPoint.getSignature().getDeclaringType().getSimpleName(), (Long) firstArg);
             }
