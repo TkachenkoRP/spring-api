@@ -26,6 +26,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+	implementation("org.springframework.boot:spring-boot-starter-security")
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("org.postgresql:postgresql")
 	annotationProcessor("org.projectlombok:lombok")
@@ -36,6 +37,7 @@ dependencies {
 	testImplementation("org.testcontainers:testcontainers:1.19.3")
 	testImplementation("org.testcontainers:postgresql:1.19.3")
 	testImplementation("org.testcontainers:junit-jupiter:1.19.3")
+	testImplementation("org.springframework.security:spring-security-test")
 	implementation("org.apache.commons:commons-lang3:3.14.0")
 }
 

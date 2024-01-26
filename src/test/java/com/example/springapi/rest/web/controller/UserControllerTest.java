@@ -2,6 +2,8 @@ package com.example.springapi.rest.web.controller;
 
 import com.example.springapi.exception.EntityNotFoundException;
 import com.example.springapi.mapper.UserMapper;
+import com.example.springapi.model.RoleEntity;
+import com.example.springapi.model.RoleType;
 import com.example.springapi.model.UserEntity;
 import com.example.springapi.rest.AbstractTestController;
 import com.example.springapi.rest.StringTestUtils;
@@ -18,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,10 +38,11 @@ public class UserControllerTest extends AbstractTestController {
     private UserMapper userMapper;
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void whenFindAll_thenReturnAllUsers() throws Exception {
         List<UserEntity> users = new ArrayList<>();
-        users.add(createUser(1L));
-        users.add(createUser(2L));
+        users.add(createUser(1L, RoleType.ROLE_USER));
+        users.add(createUser(2L, RoleType.ROLE_ADMIN));
 
         List<UserEntityResponse> userEntityResponses = new ArrayList<>();
         userEntityResponses.add(createUserResponse(1L));
@@ -65,8 +69,9 @@ public class UserControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"MODERATOR"})
     public void whenGetUserById_thenReturnUserById() throws Exception {
-        UserEntity user = createUser(1L);
+        UserEntity user = createUser(1L, RoleType.ROLE_ADMIN);
         UserEntityResponse userResponse = createUserResponse(1L);
 
         Mockito.when(userService.findById(1L)).thenReturn(user);
@@ -90,15 +95,16 @@ public class UserControllerTest extends AbstractTestController {
     public void whenCreateUser_thenReturnNewUser() throws Exception {
         UserEntity user = new UserEntity();
         user.setName("User1");
-        UserEntity createdUser = createUser(1L);
+        user.setPassword("pass");
+        UserEntity createdUser = createUser(1L, RoleType.ROLE_ADMIN);
         UserEntityResponse response = createUserResponse(1L);
-        UpsertUserEntityRequest request = new UpsertUserEntityRequest("User1");
+        UpsertUserEntityRequest request = new UpsertUserEntityRequest("User1", "pass");
 
-        Mockito.when(userService.save(user)).thenReturn(createdUser);
+        Mockito.when(userService.save(user, RoleEntity.from(RoleType.ROLE_ADMIN))).thenReturn(createdUser);
         Mockito.when(userMapper.requestToEntity(request)).thenReturn(user);
         Mockito.when(userMapper.entityToResponse(createdUser)).thenReturn(response);
 
-        String actualResponse = mockMvc.perform(post("/api/user")
+        String actualResponse = mockMvc.perform(post("/api/user?roleType=ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -108,7 +114,7 @@ public class UserControllerTest extends AbstractTestController {
 
         String expectedResponse = StringTestUtils.readStringFromResource("response/create_user_response.json");
 
-        Mockito.verify(userService, Mockito.times(1)).save(user);
+        Mockito.verify(userService, Mockito.times(1)).save(user, RoleEntity.from(RoleType.ROLE_ADMIN));
         Mockito.verify(userMapper, Mockito.times(1)).requestToEntity(request);
         Mockito.verify(userMapper, Mockito.times(1)).entityToResponse(createdUser);
 
@@ -116,9 +122,10 @@ public class UserControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void whenUpdateUser_thenReturnUpdateUser() throws Exception {
-        UpsertUserEntityRequest request = new UpsertUserEntityRequest("New User1");
-        UserEntity updatedUser = new UserEntity(1L, "New User1", new ArrayList<>(), new ArrayList<>());
+        UpsertUserEntityRequest request = new UpsertUserEntityRequest("New User1", "pass");
+        UserEntity updatedUser = new UserEntity(1L, "New User1", new ArrayList<>(), new ArrayList<>(), List.of(RoleEntity.from(RoleType.ROLE_ADMIN)), "pass");
         UserEntityResponse response = new UserEntityResponse(1L, "New User1", 0, 0);
 
         Mockito.when(userService.update(updatedUser)).thenReturn(updatedUser);
@@ -143,6 +150,7 @@ public class UserControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void whenDeleteUserById_thenReturnStatusNoContent() throws Exception {
         mockMvc.perform(delete("/api/user/1"))
                 .andExpect(status().isNoContent());
@@ -151,6 +159,7 @@ public class UserControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void whenFindByIdNotExistedUser_thenReturnError() throws Exception {
         Mockito.when(userService.findById(500L)).thenThrow(new EntityNotFoundException("Пользователь с ID 500 не найден!"));
 
@@ -171,9 +180,12 @@ public class UserControllerTest extends AbstractTestController {
 
     @Test
     public void whenCreateUserWithEmptyName_thenReturnError() throws Exception {
-        var response = mockMvc.perform(post("/api/user")
+        UpsertUserEntityRequest request = new UpsertUserEntityRequest();
+        request.setPassword("pass");
+
+        var response = mockMvc.perform(post("/api/user?roleType=ROLE_USER")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpsertUserEntityRequest())))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse();
@@ -189,9 +201,9 @@ public class UserControllerTest extends AbstractTestController {
     @ParameterizedTest
     @MethodSource("invalidSizeName")
     public void whenCreateUserWithInvalidSizeName_thenReturnError(String name) throws Exception {
-        var response = mockMvc.perform(post("/api/user")
+        var response = mockMvc.perform(post("/api/user?roleType=ROLE_USER")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpsertUserEntityRequest(name))))
+                        .content(objectMapper.writeValueAsString(new UpsertUserEntityRequest(name, "pass"))))
                 .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse();
@@ -209,6 +221,4 @@ public class UserControllerTest extends AbstractTestController {
                 Arguments.of(RandomString.make(21))
         );
     }
-
-
 }

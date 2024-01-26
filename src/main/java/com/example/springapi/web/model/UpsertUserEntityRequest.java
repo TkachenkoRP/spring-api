@@ -10,7 +10,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpsertUserEntityRequest {
-    @NotBlank(message = "Имя пользователя должно быть указано!")
-    @Size(min = 3, max = 20, message = "Имя пользователя не может быть меньше {min} и больше {max}!")
+    @NotBlank(message = "Имя пользователя должно быть указано!", groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
+    @Size(min = 3, max = 20, message = "Имя пользователя не может быть меньше {min} и больше {max}!", groups = {CreateValidationGroup.class, UpdateValidationGroup.class})
     private String name;
+    @NotBlank(message = "Пароль должен быть укзан!", groups = {CreateValidationGroup.class})
+    @Size(min = 3, message = "Пароль должен содержать минимум {min} символов!", groups = {CreateValidationGroup.class})
+    private String password;
+
+    public interface CreateValidationGroup {}
+
+    public interface UpdateValidationGroup {}
 }

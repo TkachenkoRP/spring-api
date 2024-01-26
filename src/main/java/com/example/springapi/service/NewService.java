@@ -1,9 +1,7 @@
 package com.example.springapi.service;
 
-import com.example.springapi.aop.CheckVerification;
 import com.example.springapi.model.NewEntity;
 import com.example.springapi.web.model.NewEntityFilter;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
@@ -14,7 +12,7 @@ public interface NewService {
 
     NewEntity findById(Long id);
 
-    NewEntity save(NewEntity newEntity);
+    NewEntity save(NewEntity newEntity, Long userId);
 
     NewEntity update(NewEntity newEntity);
 

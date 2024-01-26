@@ -6,7 +6,6 @@ import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

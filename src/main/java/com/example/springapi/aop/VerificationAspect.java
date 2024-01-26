@@ -3,19 +3,19 @@ package com.example.springapi.aop;
 import com.example.springapi.exception.VerificationException;
 import com.example.springapi.model.CommentEntity;
 import com.example.springapi.model.NewEntity;
+import com.example.springapi.model.UserEntity;
+import com.example.springapi.security.AppUserPrincipal;
 import com.example.springapi.service.impl.DatabaseCommentService;
 import com.example.springapi.service.impl.DatabaseNewService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.Objects;
 
 @Aspect
 @Component
@@ -26,26 +26,43 @@ public class VerificationAspect {
     private final DatabaseNewService databaseNewService;
     private final DatabaseCommentService databaseCommentService;
 
-    @Before("@annotation(CheckVerification)")
-    public void check(JoinPoint joinPoint) {
+    @Before("@annotation(CheckVerificationRoleUser)")
+    public void checkUserRole(JoinPoint joinPoint) {
+        performVerification(joinPoint, false);
+    }
+
+    @Before("@annotation(CheckVerificationRoleAll)")
+    public void checkAllRole(JoinPoint joinPoint) {
+        performVerification(joinPoint, true);
+    }
+
+    private void performVerification(JoinPoint joinPoint, boolean checkAllRoles) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+            return;
+        }
+
+        AppUserPrincipal userDetails = (AppUserPrincipal) authentication.getPrincipal();
+
+        Long userId = userDetails.getUserID();
+
         Object[] args = joinPoint.getArgs();
-        Long userId = 0L;
+        Long userIdFromRequest = 0L;
         if (args.length > 0) {
             Object firstArg = args[0];
-            if (firstArg instanceof CommentEntity) {
-                userId = databaseCommentService.findById(((CommentEntity) firstArg).getId()).getUser().getId();
+            if (firstArg instanceof UserEntity) {
+                userIdFromRequest = ((UserEntity) firstArg).getId();
+            } else if (firstArg instanceof CommentEntity) {
+                userIdFromRequest = databaseCommentService.findById(((CommentEntity) firstArg).getId()).getUser().getId();
             } else if (firstArg instanceof NewEntity) {
-                userId = databaseNewService.findById(((NewEntity) firstArg).getId()).getUser().getId();
+                userIdFromRequest = databaseNewService.findById(((NewEntity) firstArg).getId()).getUser().getId();
             } else if (firstArg instanceof Long) {
-                userId = getUserIdFromService(joinPoint.getSignature().getDeclaringType().getSimpleName(), (Long) firstArg);
+                userIdFromRequest = getUserIdFromService(joinPoint.getSignature().getDeclaringType().getSimpleName(), (Long) firstArg);
             }
         }
 
-        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        String header = request.getHeader("user");
-        Long id = header != null ? Long.parseLong(header) : -1L;
-
-        if (!id.equals(userId)) {
+        if (!userId.equals(userIdFromRequest) && !checkAllRoles) {
             throw new VerificationException("Вы не можете работать с чужими записями!");
         }
     }
@@ -56,6 +73,6 @@ public class VerificationAspect {
         } else if (serviceName.equals(DatabaseCommentService.class.getSimpleName())) {
             return databaseCommentService.findById(arg).getUser().getId();
         }
-        return 0L;
+        return arg;
     }
 }

@@ -1,6 +1,8 @@
 package com.example.springapi.web.controller;
 
 import com.example.springapi.mapper.UserMapper;
+import com.example.springapi.model.RoleEntity;
+import com.example.springapi.model.RoleType;
 import com.example.springapi.model.UserEntity;
 import com.example.springapi.service.UserService;
 import com.example.springapi.web.model.*;
@@ -10,13 +12,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -31,6 +33,7 @@ public class UserController {
             description = "Get all users",
             tags = {"user"}
     )
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<UserEntityListResponse> findAll() {
         return ResponseEntity.ok(
@@ -59,6 +62,7 @@ public class UserController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @GetMapping("/{id}")
     public ResponseEntity<UserEntityResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(userMapper.entityToResponse(
@@ -86,8 +90,9 @@ public class UserController {
             )
     })
     @PostMapping
-    public ResponseEntity<UserEntityResponse> create(@RequestBody @Valid UpsertUserEntityRequest request) {
-        UserEntity newUser = userService.save(userMapper.requestToEntity(request));
+    public ResponseEntity<UserEntityResponse> create(@RequestBody @Validated(UpsertUserEntityRequest.CreateValidationGroup.class) UpsertUserEntityRequest request,
+                                                     @RequestParam RoleType roleType) {
+        UserEntity newUser = userService.save(userMapper.requestToEntity(request), RoleEntity.from(roleType));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.entityToResponse(newUser));
     }
@@ -111,9 +116,10 @@ public class UserController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @PutMapping("/{id}")
     public ResponseEntity<UserEntityResponse> update(@PathVariable("id") Long userId,
-                                                     @RequestBody @Valid UpsertUserEntityRequest user) {
+                                                     @RequestBody @Validated(UpsertUserEntityRequest.UpdateValidationGroup.class) UpsertUserEntityRequest user) {
         UserEntity userUpdate = userService.update(userMapper.requestToEntity(userId, user));
 
         return ResponseEntity.ok(userMapper.entityToResponse(userUpdate));
@@ -124,6 +130,7 @@ public class UserController {
             description = "Delete user by ID",
             tags = {"user", "id"}
     )
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.deleteById(id);

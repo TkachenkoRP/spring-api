@@ -9,9 +9,9 @@ public interface CategoryService {
 
     CategoryEntity findById(Long id);
 
-    CategoryEntity save(CategoryEntity user);
+    CategoryEntity save(CategoryEntity category);
 
-    CategoryEntity update(CategoryEntity user);
+    CategoryEntity update(CategoryEntity category);
 
     void deleteById(Long id);
 }

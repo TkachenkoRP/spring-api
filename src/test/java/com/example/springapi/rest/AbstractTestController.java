@@ -1,9 +1,6 @@
 package com.example.springapi.rest;
 
-import com.example.springapi.model.CategoryEntity;
-import com.example.springapi.model.CommentEntity;
-import com.example.springapi.model.NewEntity;
-import com.example.springapi.model.UserEntity;
+import com.example.springapi.model.*;
 import com.example.springapi.web.model.CategoryEntityResponse;
 import com.example.springapi.web.model.UserEntityResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,12 +48,14 @@ public abstract class AbstractTestController {
         return category;
     }
 
-    protected UserEntity createUser(Long id) {
+    protected UserEntity createUser(Long id, RoleType role) {
         UserEntity user = new UserEntity(
                 id,
                 "User" + id,
                 new ArrayList<>(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                List.of(RoleEntity.from(role)),
+                "pass"
         );
         return user;
     }

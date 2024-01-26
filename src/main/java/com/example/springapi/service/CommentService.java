@@ -9,9 +9,9 @@ public interface CommentService {
 
     CommentEntity findById(Long id);
 
-    CommentEntity save(CommentEntity user);
+    CommentEntity save(CommentEntity comment, Long userId);
 
-    CommentEntity update(CommentEntity user);
+    CommentEntity update(CommentEntity comment);
 
     void deleteById(Long id);
 

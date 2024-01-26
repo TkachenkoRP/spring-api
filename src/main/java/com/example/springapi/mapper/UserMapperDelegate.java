@@ -18,6 +18,7 @@ public abstract class UserMapperDelegate implements UserMapper {
     public UserEntity requestToEntity(UpsertUserEntityRequest request) {
         UserEntity entity = new UserEntity();
         entity.setName(request.getName());
+        entity.setPassword(request.getPassword());
         return entity;
     }
 

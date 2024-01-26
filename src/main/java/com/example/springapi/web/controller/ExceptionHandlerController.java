@@ -1,12 +1,14 @@
 package com.example.springapi.web.controller;
 
 import com.example.springapi.exception.EntityNotFoundException;
+import com.example.springapi.exception.UserRegistrationException;
 import com.example.springapi.exception.VerificationException;
 import com.example.springapi.web.model.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +24,14 @@ public class ExceptionHandlerController {
         log.error("Ошибка при попытке получить сущность", e);
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getLocalizedMessage()));
+    }
+
+    @ExceptionHandler(UserRegistrationException.class)
+    public ResponseEntity<ErrorResponse> notFound(UserRegistrationException e) {
+        log.error("Ошибка при регистрации пользователя", e);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getLocalizedMessage()));
     }
 
@@ -45,5 +55,13 @@ public class ExceptionHandlerController {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getLocalizedMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> notAccess(AccessDeniedException e) {
+        log.error("Access denied: {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse("Вы не авторизированы, либо у Вас нет доступа!"));
     }
 }

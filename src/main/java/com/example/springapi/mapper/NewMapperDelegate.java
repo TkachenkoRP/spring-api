@@ -1,15 +1,11 @@
 package com.example.springapi.mapper;
 
-import com.example.springapi.model.CommentEntity;
 import com.example.springapi.model.NewEntity;
 import com.example.springapi.service.CategoryService;
 import com.example.springapi.service.CommentService;
-import com.example.springapi.service.UserService;
 import com.example.springapi.web.model.NewEntityForListResponse;
 import com.example.springapi.web.model.UpsertNewEntityRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 public abstract class NewMapperDelegate implements NewMapper {
 
@@ -17,8 +13,6 @@ public abstract class NewMapperDelegate implements NewMapper {
     private UserMapper userMapper;
     @Autowired
     private CategoryMapper categoryMapper;
-    @Autowired
-    private UserService userService;
     @Autowired
     private CategoryService categoryService;
     @Autowired
@@ -28,7 +22,6 @@ public abstract class NewMapperDelegate implements NewMapper {
     public NewEntity requestToEntity(UpsertNewEntityRequest request) {
         NewEntity entity = new NewEntity();
         entity.setContent(request.getContent());
-        entity.setUser(userService.findById(request.getUserId()));
         entity.setCategory(categoryService.findById(request.getCategoryId()));
         return entity;
     }

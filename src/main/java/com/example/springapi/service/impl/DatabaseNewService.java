@@ -1,6 +1,7 @@
 package com.example.springapi.service.impl;
 
-import com.example.springapi.aop.CheckVerification;
+import com.example.springapi.aop.CheckVerificationRoleAll;
+import com.example.springapi.aop.CheckVerificationRoleUser;
 import com.example.springapi.exception.EntityNotFoundException;
 import com.example.springapi.model.NewEntity;
 import com.example.springapi.model.UserEntity;
@@ -13,7 +14,6 @@ import com.example.springapi.web.model.NewEntityFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -46,14 +46,14 @@ public class DatabaseNewService implements NewService {
     }
 
     @Override
-    public NewEntity save(NewEntity newEntity) {
-        UserEntity user = userService.findById(newEntity.getUser().getId());
+    public NewEntity save(NewEntity newEntity, Long userId) {
+        UserEntity user = userService.findById(userId);
         newEntity.setUser(user);
         return repository.save(newEntity);
     }
 
     @Override
-    @CheckVerification
+    @CheckVerificationRoleAll
     public NewEntity update(NewEntity newEntity) {
         NewEntity existedNewEntity = findById(newEntity.getId());
         BeanUtils.copyNonNullProperties(newEntity, existedNewEntity);
@@ -61,7 +61,7 @@ public class DatabaseNewService implements NewService {
     }
 
     @Override
-    @CheckVerification
+    @CheckVerificationRoleUser
     public void deleteById(Long id) {
         repository.deleteById(id);
     }

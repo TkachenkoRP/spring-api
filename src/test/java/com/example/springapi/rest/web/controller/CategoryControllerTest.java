@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +31,7 @@ public class CategoryControllerTest extends AbstractTestController {
     private CategoryMapper categoryMapper;
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"USER"})
     public void whenFindAll_thenReturnAllCategories() throws Exception {
         List<CategoryEntity> categories = new ArrayList<>();
         categories.add(createCategory(1L));
@@ -60,6 +62,7 @@ public class CategoryControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"USER"})
     public void whenGetCategoryById_thenReturnCategoryById() throws Exception {
         CategoryEntity category = createCategory(1L);
         CategoryEntityResponse categoryResponse = createCategoryResponse(1L);
@@ -82,6 +85,7 @@ public class CategoryControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"ADMIN"})
     public void whenCreateCategory_thenReturnNewCategory() throws Exception {
         CategoryEntity category = new CategoryEntity();
         category.setName("Category1");
@@ -111,6 +115,7 @@ public class CategoryControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"ADMIN"})
     public void whenUpdateCategory_thenReturnUpdatedCategory() throws Exception {
         UpsertCategoryEntityRequest request = new UpsertCategoryEntityRequest("New Category1");
         CategoryEntity updatedCategory = new CategoryEntity(1L, "New Category1", new ArrayList<>());
@@ -138,6 +143,7 @@ public class CategoryControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"ADMIN"})
     public void whenDeleteCategoryById_thenReturnStatusNoContent() throws Exception {
         mockMvc.perform(delete("/api/category/1"))
                 .andExpect(status().isNoContent());
@@ -146,6 +152,7 @@ public class CategoryControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"USER"})
     public void whenFindByIdNotExistedCategory_thenReturnError() throws Exception {
         Mockito.when(categoryService.findById(500L)).thenThrow(new EntityNotFoundException("Категория с ID 500 не найдена!"));
 
@@ -165,6 +172,7 @@ public class CategoryControllerTest extends AbstractTestController {
     }
 
     @Test
+    @WithMockUser(username = "moderator", roles = {"USER"})
     public void whenCreateCategoryWithEmptyName_thenReturnError() throws Exception {
         var response = mockMvc.perform(post("/api/category")
                         .contentType(MediaType.APPLICATION_JSON)

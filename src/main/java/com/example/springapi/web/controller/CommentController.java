@@ -2,11 +2,10 @@ package com.example.springapi.web.controller;
 
 import com.example.springapi.mapper.CommentMapper;
 import com.example.springapi.model.CommentEntity;
+import com.example.springapi.security.AppUserPrincipal;
 import com.example.springapi.service.CommentService;
 import com.example.springapi.web.model.*;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -82,8 +82,10 @@ public class CommentController {
             )
     })
     @PostMapping
-    public ResponseEntity<CommentEntityResponse> create(@RequestBody @Valid UpsertCommentEntityRequest request) {
-        CommentEntity commentEntity = commentService.save(commentMapper.requestToEntity(request));
+    public ResponseEntity<CommentEntityResponse> create(
+            @RequestBody @Valid UpsertCommentEntityRequest request,
+            @AuthenticationPrincipal AppUserPrincipal userDetails) {
+        CommentEntity commentEntity = commentService.save(commentMapper.requestToEntity(request), userDetails.getUserID());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(commentMapper.entityToResponse(commentEntity));
     }
@@ -109,12 +111,6 @@ public class CommentController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<CommentEntityResponse> update(
-            @Parameter(
-                    description = "ID пользователя",
-                    required = false,
-                    in = ParameterIn.HEADER
-            )
-            @RequestHeader(value = "user", required = false) String userHeader,
             @PathVariable("id") Long commentId,
             @RequestBody @Valid UpsertCommentEntityRequest request) {
         CommentEntity commentEntity = commentService.update(
@@ -129,14 +125,7 @@ public class CommentController {
             tags = {"category", "id"}
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @Parameter(
-                    description = "ID пользователя",
-                    required = false,
-                    in = ParameterIn.HEADER
-            )
-            @RequestHeader(value = "user", required = false) String userHeader,
-            @PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         commentService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

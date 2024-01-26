@@ -2,11 +2,10 @@ package com.example.springapi.web.controller;
 
 import com.example.springapi.mapper.NewMapper;
 import com.example.springapi.model.NewEntity;
+import com.example.springapi.security.AppUserPrincipal;
 import com.example.springapi.service.NewService;
 import com.example.springapi.web.model.*;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +15,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,6 +32,7 @@ public class NewController {
             description = "Get all news with filter",
             tags = {"new", "filter"}
     )
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @GetMapping("/filter")
     public ResponseEntity<NewEntityListResponse> filterBy(NewEntityFilter filter) {
         return ResponseEntity.ok(
@@ -45,6 +47,7 @@ public class NewController {
             description = "Get all news",
             tags = {"new"}
     )
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @GetMapping
     public ResponseEntity<NewEntityListResponse> findAll() {
         return ResponseEntity.ok(newMapper.entityListToListResponse(
@@ -71,6 +74,7 @@ public class NewController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @GetMapping("/{id}")
     public ResponseEntity<NewEntityResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(newMapper.entityToResponse(newService.findById(id)));
@@ -95,9 +99,12 @@ public class NewController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @PostMapping
-    public ResponseEntity<NewEntityResponse> create(@RequestBody @Valid UpsertNewEntityRequest newEntity) {
-        NewEntity newEntityCreate = newService.save(newMapper.requestToEntity(newEntity));
+    public ResponseEntity<NewEntityResponse> create(
+            @RequestBody @Valid UpsertNewEntityRequest newEntity,
+            @AuthenticationPrincipal AppUserPrincipal userDetails) {
+        NewEntity newEntityCreate = newService.save(newMapper.requestToEntity(newEntity), userDetails.getUserID());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(newMapper.entityToResponse(newEntityCreate));
     }
@@ -121,16 +128,10 @@ public class NewController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @PutMapping("/{id}")
-    public ResponseEntity<NewEntityResponse> update(
-            @Parameter(
-                    description = "ID пользователя",
-                    required = false,
-                    in = ParameterIn.HEADER
-            )
-            @RequestHeader(value = "user", required = false) String userHeader,
-            @PathVariable("id") Long newId,
-            @RequestBody @Valid UpsertNewEntityRequest newEntity) {
+    public ResponseEntity<NewEntityResponse> update(@PathVariable("id") Long newId,
+                                                    @RequestBody @Valid UpsertNewEntityRequest newEntity) {
         NewEntity newEntityUpdate = newService.update(
                 newMapper.requestToEntity(newId, newEntity)
         );
@@ -143,15 +144,9 @@ public class NewController {
             description = "Delete new by ID",
             tags = {"new", "id"}
     )
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @Parameter(
-                    description = "ID пользователя",
-                    required = false,
-                    in = ParameterIn.HEADER
-            )
-            @RequestHeader(value = "user", required = false) String userHeader,
-            @PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         newService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

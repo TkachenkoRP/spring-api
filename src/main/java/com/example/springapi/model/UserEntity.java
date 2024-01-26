@@ -5,7 +5,6 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -25,4 +24,10 @@ public class UserEntity {
     @ToString.Exclude
     @Builder.Default
     private List<CommentEntity> comments = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @Builder.Default
+    private List<RoleEntity> roles = new ArrayList<>();
+    private String password;
 }

@@ -4,7 +4,6 @@ import com.example.springapi.exception.EntityNotFoundException;
 import com.example.springapi.model.CategoryEntity;
 import com.example.springapi.repository.DatabaseCategoryRepository;
 import com.example.springapi.service.CategoryService;
-import com.example.springapi.service.NewService;
 import com.example.springapi.utils.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

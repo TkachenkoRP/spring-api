@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,6 +30,7 @@ public class CategoryController {
             description = "Get categories",
             tags = {"category"}
     )
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @GetMapping
     public ResponseEntity<CategoryEntityListResponse> findAll() {
         return ResponseEntity.ok(categoryMapper.entityListToListResponse(
@@ -55,6 +57,7 @@ public class CategoryController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryEntityResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(categoryMapper.entityToResponse(categoryService.findById(id)));
@@ -79,6 +82,7 @@ public class CategoryController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     @PostMapping
     public ResponseEntity<CategoryEntityResponse> create(@RequestBody @Valid UpsertCategoryEntityRequest categoryEntity) {
         CategoryEntity categoryEntityCreate = categoryService.save(categoryMapper.requestToEntity(categoryEntity));
@@ -105,6 +109,7 @@ public class CategoryController {
                     }
             )
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoryEntityResponse> update(@PathVariable("id") Long categoryId,
                                                          @RequestBody @Valid UpsertCategoryEntityRequest categoryEntity) {
@@ -119,6 +124,7 @@ public class CategoryController {
             description = "Delete category by ID",
             tags = {"category", "id"}
     )
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.deleteById(id);
