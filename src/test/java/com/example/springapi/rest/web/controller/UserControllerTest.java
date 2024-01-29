@@ -20,9 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithUserDetails;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,7 +40,7 @@ public class UserControllerTest extends AbstractTestController {
     @Test
     public void whenFindAllUsersWithoutRole_thenReturnForbidden() throws Exception {
         mockMvc.perform(get("/api/user"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -86,7 +84,7 @@ public class UserControllerTest extends AbstractTestController {
     @Test
     public void whenFindUserByIdWithoutRole_thenReturnForbidden() throws Exception {
         mockMvc.perform(get("/api/user/1"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
